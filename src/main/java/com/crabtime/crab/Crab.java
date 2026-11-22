@@ -85,7 +85,6 @@ public class Crab extends PathfinderMob {
     }
 
     @Override protected PathNavigation createNavigation(Level level) { return new AmphibiousPathNavigation(this, level); }
-    @Override public boolean canBreatheUnderwater() { return true; }
     @Override protected float getWaterSlowDown() { return 0.9f; }
     @Override public boolean removeWhenFarAway(double dist) { return false; }
 
