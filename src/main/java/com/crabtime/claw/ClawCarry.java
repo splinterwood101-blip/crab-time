@@ -126,8 +126,8 @@ public final class ClawCarry {
         if (!holdingClaw(p) || m.level() != p.level() || !p.isAlive()) { release(p); return; }
         Vec3 look = p.getLookAngle();
         Vec3 flat = new Vec3(look.x, 0, look.z).normalize();
-        double dist = 1.1 + m.getBbWidth() / 2;
-        Vec3 at = p.getEyePosition().add(flat.scale(dist)).add(0, look.y * dist * 0.6 - m.getBbHeight() * 0.5 - 0.35, 0);
+        double dist = 1.7 + m.getBbWidth() / 2;
+        Vec3 at = p.getEyePosition().add(flat.scale(dist)).add(0, Math.max(-0.6, Math.min(0.3, look.y)) * 0.8 - m.getBbHeight() * 0.5 - 0.7, 0);
         m.moveTo(at.x, at.y, at.z, p.getYRot() + 180f, 0);
         m.setYHeadRot(p.getYRot() + 180f);
         m.setDeltaMovement(Vec3.ZERO);

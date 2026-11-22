@@ -105,7 +105,7 @@ public class CrabModel extends EntityModel<Crab> {
     }
 
     /** Where the crab holds its find, in model space (same mapping as the vertices). */
-    public static final Vector3f HELD_AT = new Vector3f(0, (24f - 12.5f) / 16f, -7.5f / 16f);
+    public static final Vector3f HELD_AT = new Vector3f(0, (24f - 16f) / 16f, -8.5f / 16f);
 
     @Override
     public void renderToBuffer(PoseStack poseStack, VertexConsumer vc, int light, int overlay, int color) {
