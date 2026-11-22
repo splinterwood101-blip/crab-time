@@ -1,0 +1,41 @@
+name: Build mod
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build
+        run: chmod +x ./gradlew && ./gradlew build --stacktrace
+      - name: Show jar contents
+        run: unzip -l build/libs/*.jar
+      - name: Server start test
+        run: |
+          mkdir -p run && echo "eula=true" > run/eula.txt
+          (timeout 420 ./gradlew runServer --console=plain > server.log 2>&1) || true
+          echo "===== mod related lines ====="
+          grep -iE "crabtime" server.log | head -60 || true
+          echo "===== errors and exceptions ====="
+          grep -E "ERROR|Exception|Caused by" server.log | head -60 || true
+          if grep -q "Done (" server.log; then echo "SERVER_STARTED_OK"; else echo "SERVER_DID_NOT_FINISH_STARTING"; tail -80 server.log; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crabtime-jar
+          path: build/libs/*.jar
+      - name: Publish test build release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete test-build -y --cleanup-tag || true
+          gh release create test-build build/libs/*.jar --prerelease --target "$GITHUB_SHA" \
+            --title "Crab Time test build" \
+            --notes "Built from: $(git log -1 --format=%s). Latest automatic test build for Minecraft 1.21.1 (NeoForge). Download the .jar below and put it in your mods folder."

@@ -1,0 +1,19 @@
+{
+  "itemGroup.crabtime": "Crab Time",
+  "entity.crabtime.crab": "Crab",
+  "block.crabtime.glimmer_sand_block": "Glimmer Sand Block",
+  "block.crabtime.driftwood_log": "Driftwood Log",
+  "block.crabtime.crab_nest": "Crab Nest",
+  "item.crabtime.glimmer_sand": "Glimmer Sand",
+  "item.crabtime.crab_claw": "Crab Claw",
+  "item.crabtime.big_crab_claw": "Big Crab Claw",
+  "item.crabtime.crab_spawn_egg": "Crab Spawn Egg",
+  "container.crabtime.crab_nest": "Crab Nest",
+  "tooltip.crabtime.driftwood": "Craft with a brush: where the brush goes picks the log",
+  "tooltip.crabtime.driftwood1": " Oak      Spruce    Birch",
+  "tooltip.crabtime.driftwood2": " Jungle   [Drift]   Acacia",
+  "tooltip.crabtime.driftwood3": " Dark Oak Mangrove  Cherry",
+  "tooltip.crabtime.big_crab_claw1": "Right-click a mob to grab it",
+  "tooltip.crabtime.big_crab_claw2": "Right-click a block to set it down",
+  "tooltip.crabtime.big_crab_claw3": "Sneak + right-click to throw it"
+}

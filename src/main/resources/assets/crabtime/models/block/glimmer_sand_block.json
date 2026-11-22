@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "crabtime:block/glimmer_sand_block"
+  }
+}

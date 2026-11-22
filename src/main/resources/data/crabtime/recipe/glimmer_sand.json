@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "crabtime:glimmer_sand_block"
+    }
+  ],
+  "result": {
+    "id": "crabtime:glimmer_sand",
+    "count": 4
+  }
+}

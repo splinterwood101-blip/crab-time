@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "GG",
+    "GG"
+  ],
+  "key": {
+    "G": {
+      "item": "crabtime:glimmer_sand"
+    }
+  },
+  "result": {
+    "id": "crabtime:glimmer_sand_block",
+    "count": 1
+  }
+}

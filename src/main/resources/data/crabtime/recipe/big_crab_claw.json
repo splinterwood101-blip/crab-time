@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "CIC",
+    "IDI",
+    "CIC"
+  ],
+  "key": {
+    "C": {
+      "item": "crabtime:crab_claw"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "id": "crabtime:big_crab_claw",
+    "count": 1
+  }
+}
