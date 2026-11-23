@@ -51,7 +51,7 @@ import java.util.Optional;
  */
 public class Crab extends PathfinderMob {
     public static final String[] ANIMS = {"dig", "carry", "warn", "pinch", "snip", "shed", "bury"};
-    public static final float[] DUR = {2.6f, 2.6f, 1.8f, 1.0f, 1.4f, 2.6f, 2.4f};
+    public static final float[] DUR = {2.6f, 2.6f, 1.8f, 1.0f, 1.2f, 1.2f, 2.4f};
     public static final int DIG = 0, WARN = 2, PINCH = 3, SNIP = 4, SHED = 5, BURY = 6;
     private static final EntityDataAccessor<Integer> ANIM = SynchedEntityData.defineId(Crab.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<ItemStack> HELD = SynchedEntityData.defineId(Crab.class, EntityDataSerializers.ITEM_STACK);
@@ -62,6 +62,8 @@ public class Crab extends PathfinderMob {
     // client
     private int clientAnim = -1, clientStart;
     private float side, sideO, carry, carryO;
+    /** Client only: which looping animation is showing. */
+    public final AnimState animState = new AnimState();
 
     public Crab(EntityType<? extends Crab> type, Level level) {
         super(type, level);
@@ -161,7 +163,7 @@ public class Crab extends PathfinderMob {
         // leads: crabs don't stay leashed, they snip them
         if (isLeashed()) {
             if (++leashTicks == 20) playAnim(SNIP);
-            if (leashTicks >= 34) {
+            if (leashTicks >= 32) {
                 dropLeash(true, true); leashTicks = 0;
                 level().playSound(null, blockPosition(), SoundEvents.SHEEP_SHEAR, SoundSource.NEUTRAL, 0.8f, 1.5f);
             }
@@ -320,12 +322,12 @@ public class Crab extends PathfinderMob {
         @Override public boolean canUse() {
             return shedCooldown == 0 && !hasHeld() && getTarget() == null && validNest() && nest.distSqr(blockPosition()) < 64 && getRandom().nextInt(100) == 0;
         }
-        @Override public boolean canContinueToUse() { return t < 52; }
+        @Override public boolean canContinueToUse() { return t < 26; }
         @Override public void start() { t = 0; getNavigation().stop(); playAnim(SHED); }
         @Override public void tick() {
             t++;
             getNavigation().stop();
-            if (t == 32) { spawnAtLocation(new ItemStack(ModRegistry.CRAB_CLAW.get())); dust(5); playSound(SoundEvents.TURTLE_SHAMBLE_BABY, 1f, 1.2f); }
+            if (t == 18) { spawnAtLocation(new ItemStack(ModRegistry.CRAB_CLAW.get())); dust(5); playSound(SoundEvents.TURTLE_SHAMBLE_BABY, 1f, 1.2f); }
         }
         @Override public void stop() { shedCooldown = 12000 + getRandom().nextInt(12000); }
     }

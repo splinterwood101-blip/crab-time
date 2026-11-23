@@ -55,7 +55,7 @@ public final class ModRegistry {
 
     // entity
     public static final DeferredHolder<EntityType<?>, EntityType<Crab>> CRAB = ENTITIES.register("crab",
-            () -> EntityType.Builder.of(Crab::new, MobCategory.CREATURE).sized(0.9f, 0.6f).clientTrackingRange(8).build("crab"));
+            () -> EntityType.Builder.of(Crab::new, MobCategory.CREATURE).sized(0.75f, 0.5f).clientTrackingRange(8).build("crab"));
 
     // items
     public static final DeferredItem<BlockItem> GLIMMER_SAND_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("glimmer_sand_block", GLIMMER_SAND_BLOCK);
