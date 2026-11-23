@@ -1,6 +1,13 @@
 package com.crabtime.crab;
 
+import com.crabtime.CrabTime;
 import com.crabtime.ModRegistry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import com.crabtime.block.CrabNestBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -56,9 +63,10 @@ public class Crab extends PathfinderMob {
     private static final EntityDataAccessor<Integer> ANIM = SynchedEntityData.defineId(Crab.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<ItemStack> HELD = SynchedEntityData.defineId(Crab.class, EntityDataSerializers.ITEM_STACK);
 
+    public static final ResourceKey<LootTable> DIG_LOOT = ResourceKey.create(Registries.LOOT_TABLE, CrabTime.id("gameplay/crab_dig"));
     @Nullable private BlockPos nest;
     private int seq, animIdx = -1, animStart;
-    private int digCooldown, shedCooldown, buryCooldown, buryTicks, warnTicks, carryTicks, leashTicks, nestSearch;
+    private int digCooldown, shedCooldown, buryCooldown, buryTicks, warnTicks, carryTicks, leashTicks, nestSearch, nestless;
     // client
     private int clientAnim = -1, clientStart;
     private float side, sideO, carry, carryO;
@@ -168,16 +176,29 @@ public class Crab extends PathfinderMob {
                 level().playSound(null, blockPosition(), SoundEvents.SHEEP_SHEAR, SoundSource.NEUTRAL, 0.8f, 1.5f);
             }
         } else leashTicks = 0;
-        // carrying something with no nest to take it to: start a new nest on the beach, or give up and drop it
-        if (hasHeld() && !validNest()) {
-            carryTicks++;
-            if (carryTicks > 1200 && onGround() && !isInWater() && level().getBlockState(blockPosition().below()).is(BlockTags.SAND)
-                    && level().isEmptyBlock(blockPosition()) && findNest(24).isEmpty()) {
-                level().setBlock(blockPosition(), ModRegistry.CRAB_NEST.get().defaultBlockState(), 3);
-                nest = blockPosition();
-                moveTo(getX() + 0.5, getY() + 0.5, getZ());
-            } else if (carryTicks > 2400) { spawnAtLocation(held()); setHeld(ItemStack.EMPTY); }
-        }
+        // no nest: join one nearby, or (standing on beach sand, out of the water) build a new one after about 30 seconds
+        if (!validNest()) {
+            nestless++;
+            if (hasHeld()) carryTicks++;
+            if (nestless % 100 == 0) {
+                nest = findNest(24).orElse(null);
+                if (nest == null && nestless >= 600 && canNestHere()) {
+                    BlockPos at = blockPosition();
+                    level().setBlock(at, ModRegistry.CRAB_NEST.get().defaultBlockState(), 3);
+                    nest = at;
+                    moveTo(getX(), at.getY() + 0.5, getZ());
+                    playSound(SoundEvents.SAND_PLACE, 1f, 1f);
+                }
+            }
+            if (hasHeld() && carryTicks > 2400) { spawnAtLocation(held()); setHeld(ItemStack.EMPTY); }
+        } else nestless = 0;
+    }
+
+    /** Nests only go on sand, above the water. */
+    private boolean canNestHere() {
+        BlockPos at = blockPosition();
+        return onGround() && !isInWater() && getTarget() == null && level().getBlockState(at.below()).is(BlockTags.SAND)
+                && level().isEmptyBlock(at) && level().getFluidState(at).isEmpty();
     }
 
     private boolean validNest() { return nest != null && level().getBlockState(nest).is(ModRegistry.CRAB_NEST.get()); }
@@ -195,17 +216,23 @@ public class Crab extends PathfinderMob {
         }
     }
 
+    /** What a dig turns up: the loot table data/crabtime/loot_table/gameplay/crab_dig.json. */
+    private ItemStack digUp() {
+        if (!(level() instanceof ServerLevel sl)) return ItemStack.EMPTY;
+        LootTable table = sl.getServer().reloadableRegistries().getLootTable(DIG_LOOT);
+        LootParams params = new LootParams.Builder(sl).withParameter(LootContextParams.ORIGIN, position())
+                .withParameter(LootContextParams.THIS_ENTITY, this).create(LootContextParamSets.GIFT);
+        for (ItemStack s : table.getRandomItems(params)) if (!s.isEmpty()) return s;
+        return ItemStack.EMPTY;
+    }
+
     // ---------- fighting ----------
     @Override
     public boolean hurt(DamageSource src, float amount) {
-        if (buryTicks > 0) amount *= 0.2f;
         boolean calm = getTarget() == null;
         boolean hit = super.hurt(src, amount);
         if (!hit || level().isClientSide || !isAlive()) return hit;
-        if (getHealth() < getMaxHealth() * 0.35f && buryCooldown == 0) {
-            buryTicks = 48; buryCooldown = 600; playAnim(BURY);
-            playSound(SoundEvents.SAND_BREAK, 1f, 0.9f);
-        } else if (calm && src.getEntity() instanceof LivingEntity && buryTicks == 0) {
+        if (calm && src.getEntity() instanceof LivingEntity && buryTicks == 0) {
             warnTicks = 30; playAnim(WARN);
         }
         return hit;
@@ -277,9 +304,8 @@ public class Crab extends PathfinderMob {
             if (t > 6 && t < 46 && t % 3 == 0) dust(3);
             if (t % 10 == 5) playSound(SoundEvents.SAND_HIT, 0.5f, 1.2f);
             if (t == 50) {
-                setHeld(getRandom().nextFloat() < 0.7f ? new ItemStack(ModRegistry.GLIMMER_SAND.get())
-                        : new ItemStack(ModRegistry.DRIFTWOOD_LOG_ITEM.get()));
-                playSound(SoundEvents.ITEM_PICKUP, 0.5f, 1.4f);
+                ItemStack find = digUp();
+                if (!find.isEmpty()) { setHeld(find); playSound(SoundEvents.ITEM_PICKUP, 0.5f, 1.4f); }
                 digCooldown = 1200 + getRandom().nextInt(1200);
             }
         }

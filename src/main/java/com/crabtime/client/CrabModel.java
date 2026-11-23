@@ -20,7 +20,7 @@ public class CrabModel extends EntityModel<Crab> {
     private float rootDrop; // model pixels, for the bury fallback
 
     /** Where the crab holds its find (model pixels, Blockbench space). */
-    public static final Vector3f HELD_AT = new Vector3f(0, 8f, -2.5f);
+    public static final Vector3f HELD_AT = new Vector3f(0, 7f, -3.5f);
 
     private void init() {
         if (rig != null) return;
@@ -53,10 +53,6 @@ public class CrabModel extends EntityModel<Crab> {
         if (move != null && rig.anim(fileName(move)) != null) {
             want = fileName(move); t = e.animTime(pt); oneShot = true;
         } else {
-            if ("bury".equals(move)) { // no bury in the file yet: sink into the sand
-                float bt = e.animTime(pt);
-                rootDrop = 7f * ease(bt / 0.7f) * (1 - ease((bt - 1.7f) / 0.6f));
-            }
             if (e.carryAmount(pt) > 0.5f) want = "walking with item";
             else if (limbAmount > 0.08f) want = "walking";
             else want = "claw idle";

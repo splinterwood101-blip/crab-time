@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:gift",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:stick",
+          "weight": 25
+        },
+        {
+          "type": "minecraft:item",
+          "name": "crabtime:driftwood_log",
+          "weight": 20
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_nugget",
+          "weight": 15
+        },
+        {
+          "type": "minecraft:item",
+          "name": "crabtime:glimmer_sand",
+          "weight": 13
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:emerald",
+          "weight": 2
+        }
+      ]
+    }
+  ]
+}
