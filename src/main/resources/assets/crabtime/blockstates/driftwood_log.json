@@ -1,16 +1,16 @@
 {
-  "variants": {
-    "axis=y": {
-      "model": "crabtime:block/driftwood_log"
-    },
-    "axis=z": {
-      "model": "crabtime:block/driftwood_log_horizontal",
-      "x": 90
-    },
-    "axis=x": {
-      "model": "crabtime:block/driftwood_log_horizontal",
-      "x": 90,
-      "y": 90
-    }
+ "variants": {
+  "axis=y": {
+   "model": "crabtime:block/driftwood_log"
+  },
+  "axis=z": {
+   "model": "crabtime:block/driftwood_log",
+   "x": 90
+  },
+  "axis=x": {
+   "model": "crabtime:block/driftwood_log",
+   "x": 90,
+   "y": 90
   }
+ }
 }
