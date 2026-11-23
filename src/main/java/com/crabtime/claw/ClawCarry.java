@@ -62,7 +62,16 @@ public final class ClawCarry {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onInteract(PlayerInteractEvent.EntityInteract e) {
         ItemStack stack = e.getItemStack();
-        if (!(stack.getItem() instanceof BigCrabClawItem) || !canGrab(e.getTarget())) return;
+        if (!(stack.getItem() instanceof BigCrabClawItem)) return;
+        // clicking the mob you're already holding: sneak to throw it, otherwise set it down
+        if (e.getEntity() instanceof ServerPlayer sp0 && e.getTarget().getUUID().equals(CARRY.get(sp0.getUUID()))) {
+            e.setCanceled(true);
+            e.setCancellationResult(InteractionResult.SUCCESS);
+            if (sp0.isShiftKeyDown()) throwMob(sp0);
+            else setDown(sp0, e.getTarget().position());
+            return;
+        }
+        if (!canGrab(e.getTarget())) return;
         e.setCanceled(true);
         e.setCancellationResult(InteractionResult.SUCCESS);
         if (!(e.getEntity() instanceof ServerPlayer sp) || carrying(sp)) return;
@@ -137,7 +146,15 @@ public final class ClawCarry {
         Vec3 look = p.getLookAngle();
         Vec3 flat = new Vec3(look.x, 0, look.z).normalize();
         double dist = 1.7 + m.getBbWidth() / 2;
-        Vec3 at = p.getEyePosition().add(flat.scale(dist)).add(0, Math.max(-0.6, Math.min(0.3, look.y)) * 0.8 - m.getBbHeight() * 0.5 - 0.7, 0);
+        Vec3 eye = p.getEyePosition();
+        Vec3 want = eye.add(flat.scale(dist)).add(0, Math.max(-0.6, Math.min(0.3, look.y)) * 0.8 - m.getBbHeight() * 0.5 - 0.7, 0);
+        // don't push it into walls: pull it back toward you until it fits (or leave it where it is)
+        Vec3 at = null;
+        for (int i = 0; i <= 8 && at == null; i++) {
+            Vec3 c = eye.add(want.subtract(eye).scale(1 - i / 8.0));
+            if (p.level().noCollision(m, m.getDimensions(m.getPose()).makeBoundingBox(c))) at = c;
+        }
+        if (at == null) at = m.position();
         m.moveTo(at.x, at.y, at.z, p.getYRot() + 180f, 0);
         m.setYHeadRot(p.getYRot() + 180f);
         m.setDeltaMovement(Vec3.ZERO);
