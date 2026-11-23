@@ -2,6 +2,9 @@ package com.crabtime.block;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import com.crabtime.ModRegistry;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -28,6 +31,11 @@ public class CrabNestBlock extends BaseEntityBlock {
     @Override protected VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) { return SHAPE; }
     @Override protected RenderShape getRenderShape(BlockState s) { return RenderShape.MODEL; }
     @Nullable @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new CrabNestBlockEntity(pos, state); }
+
+    @Nullable @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return level.isClientSide ? null : createTickerHelper(type, ModRegistry.NEST_BE.get(), CrabNestBlockEntity::serverTick);
+    }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {

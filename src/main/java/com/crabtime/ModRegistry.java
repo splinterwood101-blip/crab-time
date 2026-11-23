@@ -1,6 +1,9 @@
 package com.crabtime;
 
 import com.crabtime.block.CrabNestBlock;
+import com.crabtime.menu.CrabNestMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import com.crabtime.block.CrabNestBlockEntity;
 import com.crabtime.crab.Crab;
 import com.crabtime.item.BigCrabClawItem;
@@ -50,6 +53,9 @@ public final class ModRegistry {
     /** On a Big Crab Claw while it holds a mob: the game time it grabbed it (drives the claw's animation). */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Long>> CLAW_GRABBED = COMPONENTS.register("claw_grabbed",
             () -> DataComponentType.<Long>builder().persistent(Codec.LONG).networkSynchronized(ByteBufCodecs.VAR_LONG).build());
+    public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, CrabTime.MODID);
+    public static final DeferredHolder<MenuType<?>, MenuType<CrabNestMenu>> NEST_MENU = MENUS.register("crab_nest",
+            () -> IMenuTypeExtension.create((id, inv, buf) -> new CrabNestMenu(id, inv)));
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, CrabTime.MODID);
 
     // blocks
@@ -71,6 +77,11 @@ public final class ModRegistry {
     public static final DeferredItem<Item> GLIMMER_SAND = ITEMS.registerSimpleItem("glimmer_sand");
     public static final DeferredItem<Item> CRAB_CLAW = ITEMS.registerSimpleItem("crab_claw");
     public static final DeferredItem<BigCrabClawItem> BIG_CRAB_CLAW = ITEMS.register("big_crab_claw", () -> new BigCrabClawItem(new Item.Properties().durability(250)));
+    public static final DeferredItem<Item> CRAB_EGG = ITEMS.register("crab_egg", () -> new Item(new Item.Properties().stacksTo(16)) {
+        @Override public void appendHoverText(ItemStack s, TooltipContext c, java.util.List<Component> tip, net.minecraft.world.item.TooltipFlag f) {
+            tip.add(Component.translatable("tooltip.crabtime.crab_egg").withStyle(net.minecraft.ChatFormatting.GRAY));
+        }
+    });
     public static final DeferredItem<DeferredSpawnEggItem> CRAB_SPAWN_EGG = ITEMS.register("crab_spawn_egg", () -> new DeferredSpawnEggItem(CRAB, 0xC43C26, 0xEC8440, new Item.Properties()));
 
     // other
@@ -87,13 +98,13 @@ public final class ModRegistry {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("crabtime", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.crabtime")).icon(() -> new ItemStack(CRAB_CLAW.get()))
             .displayItems((p, out) -> {
-                out.accept(CRAB_SPAWN_EGG.get()); out.accept(CRAB_CLAW.get()); out.accept(BIG_CRAB_CLAW.get());
+                out.accept(CRAB_SPAWN_EGG.get()); out.accept(CRAB_CLAW.get()); out.accept(CRAB_EGG.get()); out.accept(BIG_CRAB_CLAW.get());
                 out.accept(GLIMMER_SAND.get()); out.accept(GLIMMER_SAND_BLOCK_ITEM.get()); out.accept(DRIFTWOOD_LOG_ITEM.get()); out.accept(CRAB_NEST_ITEM.get());
             }).build());
 
     public static void register(IEventBus bus) {
         BLOCKS.register(bus); ITEMS.register(bus); ENTITIES.register(bus); BLOCK_ENTITIES.register(bus);
-        RECIPES.register(bus); COMPONENTS.register(bus); FEATURES.register(bus); POIS.register(bus); TABS.register(bus);
+        RECIPES.register(bus); COMPONENTS.register(bus); MENUS.register(bus); FEATURES.register(bus); POIS.register(bus); TABS.register(bus);
     }
 
     private ModRegistry() {}

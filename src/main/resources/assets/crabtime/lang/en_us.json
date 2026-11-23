@@ -15,5 +15,10 @@
   "tooltip.crabtime.driftwood3": " Dark Oak Mangrove  Cherry",
   "tooltip.crabtime.big_crab_claw1": "Right-click a mob to grab it",
   "tooltip.crabtime.big_crab_claw2": "Right-click a block to set it down",
-  "tooltip.crabtime.big_crab_claw3": "Sneak + right-click to throw it"
+  "tooltip.crabtime.big_crab_claw3": "Sneak + right-click to throw it",
+  "item.crabtime.crab_egg": "Crab Egg",
+  "container.crabtime.crab_nest_eggs": "Nest - Eggs",
+  "crabtime.nest.tab.finds": "Finds",
+  "crabtime.nest.tab.eggs": "Eggs",
+  "tooltip.crabtime.crab_egg": "Hatches in a crab nest (Eggs tab)"
 }

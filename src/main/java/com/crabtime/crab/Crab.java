@@ -29,6 +29,16 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.ai.goal.BreedGoal;
+import net.minecraft.world.entity.ai.goal.FollowParentGoal;
+import net.minecraft.world.entity.ai.goal.TemptGoal;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -56,7 +66,7 @@ import java.util.Optional;
  * The crab. Neutral: it wanders beaches and the sea floor, digs up glimmer sand and driftwood and carries them home to
  * its nest, sheds a claw now and then near the nest, snips leads, and buries itself in the sand when it's losing a fight.
  */
-public class Crab extends PathfinderMob {
+public class Crab extends Animal {
     public static final String[] ANIMS = {"dig", "carry", "warn", "pinch", "snip", "shed", "bury"};
     public static final float[] DUR = {2.6f, 2.6f, 1.8f, 1.0f, 1.2f, 1.2f, 2.4f};
     public static final int DIG = 0, WARN = 2, PINCH = 3, SNIP = 4, SHED = 5, BURY = 6;
@@ -82,7 +92,7 @@ public class Crab extends PathfinderMob {
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return PathfinderMob.createMobAttributes().add(Attributes.MAX_HEALTH, 14).add(Attributes.MOVEMENT_SPEED, 0.22)
+        return Animal.createMobAttributes().add(Attributes.MAX_HEALTH, 14).add(Attributes.MOVEMENT_SPEED, 0.22)
                 .add(Attributes.ATTACK_DAMAGE, 3).add(Attributes.ARMOR, 4).add(Attributes.FOLLOW_RANGE, 16)
                 .add(Attributes.WATER_MOVEMENT_EFFICIENCY, 1.0);
     }
@@ -102,9 +112,13 @@ public class Crab extends PathfinderMob {
     protected void registerGoals() {
         goalSelector.addGoal(0, new Busy());
         goalSelector.addGoal(1, new Pinch());
-        goalSelector.addGoal(2, new Deliver());
-        goalSelector.addGoal(3, new Dig());
+        goalSelector.addGoal(2, new BreedGoal(this, 1.0));
+        goalSelector.addGoal(3, new TemptGoal(this, 1.1, Ingredient.of(ItemTags.FISHES), false));
+        goalSelector.addGoal(3, new Deliver());
+        goalSelector.addGoal(3, new FetchEgg());
+        goalSelector.addGoal(4, new Dig());
         goalSelector.addGoal(4, new Shed());
+        goalSelector.addGoal(4, new FollowParentGoal(this, 1.1));
         goalSelector.addGoal(5, new RandomStrollGoal(this, 0.9, 80));
         goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6f));
         goalSelector.addGoal(7, new RandomLookAroundGoal(this));
@@ -182,7 +196,7 @@ public class Crab extends PathfinderMob {
             if (hasHeld()) carryTicks++;
             if (nestless % 100 == 0) {
                 nest = findNest(24).orElse(null);
-                if (nest == null && nestless >= 600 && canNestHere()) {
+                if (nest == null && nestless >= 600 && !isBaby() && canNestHere()) {
                     BlockPos at = blockPosition();
                     level().setBlock(at, ModRegistry.CRAB_NEST.get().defaultBlockState(), 3);
                     nest = at;
@@ -224,6 +238,23 @@ public class Crab extends PathfinderMob {
                 .withParameter(LootContextParams.THIS_ENTITY, this).create(LootContextParamSets.GIFT);
         for (ItemStack s : table.getRandomItems(params)) if (!s.isEmpty()) return s;
         return ItemStack.EMPTY;
+    }
+
+    // ---------- breeding ----------
+    @Override public boolean isFood(ItemStack stack) { return stack.is(ItemTags.FISHES); }
+    @Override @Nullable public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob other) { return ModRegistry.CRAB.get().create(level); }
+
+    /** Two crabs in love lay 1 or 2 eggs; the crabs carry them to the nest, where they hatch. */
+    @Override
+    public void spawnChildFromBreeding(ServerLevel level, Animal partner) {
+        int n = 1 + getRandom().nextInt(2);
+        for (int i = 0; i < n; i++) spawnAtLocation(new ItemStack(ModRegistry.CRAB_EGG.get()));
+        setAge(6000); partner.setAge(6000);
+        resetLove(); partner.resetLove();
+        level.broadcastEntityEvent(this, (byte) 18);
+        playSound(SoundEvents.TURTLE_LAY_EGG, 1f, 1.2f);
+        if (level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT))
+            level.addFreshEntity(new ExperienceOrb(level, getX(), getY(), getZ(), getRandom().nextInt(7) + 1));
     }
 
     // ---------- fighting ----------
@@ -292,7 +323,7 @@ public class Crab extends PathfinderMob {
         int t;
         Dig() { setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK, Flag.JUMP)); }
         @Override public boolean canUse() {
-            if (hasHeld() || digCooldown > 0 || getTarget() != null || !onGround() || getRandom().nextInt(40) != 0) return false;
+            if (isBaby() || hasHeld() || digCooldown > 0 || getTarget() != null || !onGround() || getRandom().nextInt(40) != 0) return false;
             BlockState below = level().getBlockState(blockPosition().below());
             return below.is(BlockTags.SAND) || below.is(Blocks.GRAVEL) || below.is(Blocks.CLAY);
         }
@@ -310,6 +341,37 @@ public class Crab extends PathfinderMob {
             }
         }
         @Override public void stop() { if (t < 50) digCooldown = 200; }
+    }
+
+    /** Picks up crab eggs lying near the nest so it can carry them in. */
+    class FetchEgg extends Goal {
+        ItemEntity egg;
+        int look, repath;
+        FetchEgg() { setFlags(EnumSet.of(Flag.MOVE)); }
+        @Override public boolean canUse() {
+            if (isBaby() || hasHeld() || busy() || getTarget() != null || isInLove() || !validNest() || --look > 0) return false;
+            look = 20;
+            egg = null;
+            double best = 1e9;
+            for (ItemEntity it : level().getEntitiesOfClass(ItemEntity.class, getBoundingBox().inflate(12, 4, 12), it -> it.getItem().is(ModRegistry.CRAB_EGG.get()))) {
+                double d = distanceToSqr(it);
+                if (d < best) { best = d; egg = it; }
+            }
+            return egg != null;
+        }
+        @Override public boolean canContinueToUse() { return egg != null && egg.isAlive() && !hasHeld() && getTarget() == null && !busy(); }
+        @Override public void start() { repath = 0; }
+        @Override public void tick() {
+            if (distanceToSqr(egg) < 2.0) {
+                setHeld(egg.getItem().split(1));
+                if (egg.getItem().isEmpty()) egg.discard();
+                playSound(SoundEvents.ITEM_PICKUP, 0.5f, 1.4f);
+                egg = null;
+                return;
+            }
+            if (--repath <= 0) { repath = 10; getNavigation().moveTo(egg, 1.1); }
+        }
+        @Override public void stop() { egg = null; getNavigation().stop(); }
     }
 
     /** Carries its find home and drops it in the nest. */
@@ -330,7 +392,8 @@ public class Crab extends PathfinderMob {
         @Override public void tick() {
             if (nest == null) return;
             if (distanceToSqr(nest.getX() + 0.5, nest.getY() + 0.5, nest.getZ() + 0.5) < 3.5) {
-                ItemStack left = level().getBlockEntity(nest) instanceof CrabNestBlockEntity be ? be.insert(held().copy()) : held().copy();
+                ItemStack left = level().getBlockEntity(nest) instanceof CrabNestBlockEntity be
+                        ? (held().is(ModRegistry.CRAB_EGG.get()) ? be.insertEgg(held().copy()) : be.insert(held().copy())) : held().copy();
                 if (!left.isEmpty()) spawnAtLocation(left);
                 setHeld(ItemStack.EMPTY);
                 playSound(SoundEvents.SAND_PLACE, 0.6f, 1.3f);
@@ -346,7 +409,7 @@ public class Crab extends PathfinderMob {
         int t;
         Shed() { setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK)); }
         @Override public boolean canUse() {
-            return shedCooldown == 0 && !hasHeld() && getTarget() == null && validNest() && nest.distSqr(blockPosition()) < 64 && getRandom().nextInt(100) == 0;
+            return !isBaby() && shedCooldown == 0 && !hasHeld() && getTarget() == null && validNest() && nest.distSqr(blockPosition()) < 64 && getRandom().nextInt(100) == 0;
         }
         @Override public boolean canContinueToUse() { return t < 26; }
         @Override public void start() { t = 0; getNavigation().stop(); playAnim(SHED); }

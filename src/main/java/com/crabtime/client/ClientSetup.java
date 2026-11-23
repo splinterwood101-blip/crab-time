@@ -6,6 +6,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -20,6 +21,9 @@ public final class ClientSetup {
     public static void renderers(EntityRenderersEvent.RegisterRenderers e) {
         e.registerEntityRenderer(ModRegistry.CRAB.get(), CrabRenderer::new);
     }
+
+    @SubscribeEvent
+    public static void screens(RegisterMenuScreensEvent e) { e.register(ModRegistry.NEST_MENU.get(), CrabNestScreen::new); }
 
     @SubscribeEvent
     public static void items(RegisterClientExtensionsEvent e) {
