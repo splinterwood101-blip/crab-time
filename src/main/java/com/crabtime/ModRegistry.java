@@ -9,6 +9,9 @@ import com.crabtime.recipe.DriftwoodRecipe;
 import com.crabtime.world.NestFeature;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.network.codec.ByteBufCodecs;
+import com.mojang.serialization.Codec;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -43,6 +46,10 @@ public final class ModRegistry {
     public static final DeferredRegister<RecipeSerializer<?>> RECIPES = DeferredRegister.create(Registries.RECIPE_SERIALIZER, CrabTime.MODID);
     public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, CrabTime.MODID);
     public static final DeferredRegister<PoiType> POIS = DeferredRegister.create(Registries.POINT_OF_INTEREST_TYPE, CrabTime.MODID);
+    public static final DeferredRegister<DataComponentType<?>> COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, CrabTime.MODID);
+    /** On a Big Crab Claw while it holds a mob: the game time it grabbed it (drives the claw's animation). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Long>> CLAW_GRABBED = COMPONENTS.register("claw_grabbed",
+            () -> DataComponentType.<Long>builder().persistent(Codec.LONG).networkSynchronized(ByteBufCodecs.VAR_LONG).build());
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, CrabTime.MODID);
 
     // blocks
@@ -86,7 +93,7 @@ public final class ModRegistry {
 
     public static void register(IEventBus bus) {
         BLOCKS.register(bus); ITEMS.register(bus); ENTITIES.register(bus); BLOCK_ENTITIES.register(bus);
-        RECIPES.register(bus); FEATURES.register(bus); POIS.register(bus); TABS.register(bus);
+        RECIPES.register(bus); COMPONENTS.register(bus); FEATURES.register(bus); POIS.register(bus); TABS.register(bus);
     }
 
     private ModRegistry() {}

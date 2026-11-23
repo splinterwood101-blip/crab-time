@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 /** A low sandy nest woven from driftwood twigs. Crabs drop their finds in it; open it like a chest. */
 public class CrabNestBlock extends BaseEntityBlock {
     public static final MapCodec<CrabNestBlock> CODEC = simpleCodec(CrabNestBlock::new);
-    private static final VoxelShape SHAPE = box(0, 0, 0, 16, 8, 16);
+    private static final VoxelShape SHAPE = box(0, 0, 0, 16, 3, 16);
 
     public CrabNestBlock(Properties p) { super(p); }
 

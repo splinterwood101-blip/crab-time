@@ -45,6 +45,12 @@ public class BigCrabClawItem extends Item {
         return InteractionResultHolder.pass(stack);
     }
 
+    /** Grabbing and letting go change the claw's data; don't replay the "pull out" animation for that. */
+    @Override
+    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
+        return slotChanged || !ItemStack.isSameItem(oldStack, newStack);
+    }
+
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext ctx, List<Component> tip, TooltipFlag flag) {
         for (int i = 1; i <= 3; i++) tip.add(Component.translatable("tooltip.crabtime.big_crab_claw" + i).withStyle(ChatFormatting.GRAY));

@@ -23,11 +23,15 @@ import java.util.Map;
  */
 public final class CrabRig {
     public static final ResourceLocation FILE = CrabTime.id("models/entity/crab.json");
-    private static CrabRig instance;
+    private static final Map<ResourceLocation, CrabRig> CACHE = new HashMap<>();
 
-    public static CrabRig get() {
-        if (instance == null) instance = load(FILE);
-        return instance;
+    public static CrabRig get() { return get(FILE); }
+
+    /** Any rig made by the converter (the crab, the Big Crab Claw, ...). */
+    public static CrabRig get(ResourceLocation id) { return CACHE.computeIfAbsent(id, CrabRig::load); }
+
+    public void resetPose(float[][] pose) {
+        for (float[] b : pose) { b[0] = b[1] = b[2] = b[3] = b[4] = b[5] = 0; b[6] = b[7] = b[8] = 1; }
     }
 
     public final int bones;

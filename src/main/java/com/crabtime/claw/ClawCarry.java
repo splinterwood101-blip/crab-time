@@ -1,6 +1,7 @@
 package com.crabtime.claw;
 
 import com.crabtime.CrabTime;
+import com.crabtime.ModRegistry;
 import com.crabtime.item.BigCrabClawItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -79,6 +80,7 @@ public final class ClawCarry {
         m.setInvulnerable(true);
         m.setTarget(null);
         CARRY.put(sp.getUUID(), m.getUUID());
+        stack.set(ModRegistry.CLAW_GRABBED.get(), sp.level().getGameTime());
         stack.hurtAndBreak(1, sp, LivingEntity.getSlotForHand(e.getHand()));
         sp.level().playSound(null, m.blockPosition(), SoundEvents.ARMOR_EQUIP_TURTLE.value(), SoundSource.PLAYERS, 1f, 1.3f);
         sp.swing(e.getHand(), true);
@@ -93,9 +95,16 @@ public final class ClawCarry {
         m.fallDistance = 0;
     }
 
+    /** Takes the "holding a mob" mark off every claw the player has. */
+    private static void clearMarks(Player p) {
+        for (ItemStack s : p.getInventory().items) if (s.has(ModRegistry.CLAW_GRABBED.get())) s.remove(ModRegistry.CLAW_GRABBED.get());
+        for (ItemStack s : p.getInventory().offhand) if (s.has(ModRegistry.CLAW_GRABBED.get())) s.remove(ModRegistry.CLAW_GRABBED.get());
+    }
+
     private static Mob release(ServerPlayer p) {
         Mob m = held(p);
         CARRY.remove(p.getUUID());
+        clearMarks(p);
         if (m != null) restore(m);
         return m;
     }
@@ -120,7 +129,8 @@ public final class ClawCarry {
 
     @SubscribeEvent
     public static void onTick(PlayerTickEvent.Post e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || !CARRY.containsKey(p.getUUID())) return;
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        if (!CARRY.containsKey(p.getUUID())) { if (p.tickCount % 10 == 0) clearMarks(p); return; }
         Mob m = held(p);
         if (m == null) return;
         if (!holdingClaw(p) || m.level() != p.level() || !p.isAlive()) { release(p); return; }

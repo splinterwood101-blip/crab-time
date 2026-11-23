@@ -186,7 +186,7 @@ public class Crab extends PathfinderMob {
                     BlockPos at = blockPosition();
                     level().setBlock(at, ModRegistry.CRAB_NEST.get().defaultBlockState(), 3);
                     nest = at;
-                    moveTo(getX(), at.getY() + 0.5, getZ());
+                    moveTo(getX(), at.getY() + 0.2, getZ());
                     playSound(SoundEvents.SAND_PLACE, 1f, 1f);
                 }
             }
