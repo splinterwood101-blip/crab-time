@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#c:is_plains",
+  "features": "crabtime:crop_crab_nest",
+  "step": "vegetal_decoration"
+}

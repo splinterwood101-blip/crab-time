@@ -19,7 +19,8 @@ import net.minecraft.world.item.ItemStack;
 public final class ClientSetup {
     @SubscribeEvent
     public static void renderers(EntityRenderersEvent.RegisterRenderers e) {
-        e.registerEntityRenderer(ModRegistry.CRAB.get(), CrabRenderer::new);
+        e.registerEntityRenderer(ModRegistry.CRAB.get(), ctx -> new CrabRenderer(ctx, CrabModel.BEACH));
+        e.registerEntityRenderer(ModRegistry.CROP_CRAB.get(), ctx -> new CrabRenderer(ctx, CrabModel.CROP));
     }
 
     @SubscribeEvent

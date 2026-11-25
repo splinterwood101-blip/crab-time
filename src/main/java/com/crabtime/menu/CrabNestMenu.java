@@ -20,12 +20,12 @@ public class CrabNestMenu extends AbstractContainerMenu {
     private final ContainerData data;
     public int page;
 
-    public CrabNestMenu(int id, Inventory inv) { this(id, inv, new SimpleContainer(FINDS + EGGS), new SimpleContainerData(EGGS)); }
+    public CrabNestMenu(int id, Inventory inv) { this(id, inv, new SimpleContainer(FINDS + EGGS), new SimpleContainerData(EGGS + 1)); }
 
     public CrabNestMenu(int id, Inventory inv, Container nest, ContainerData data) {
         super(ModRegistry.NEST_MENU.get(), id);
         checkContainerSize(nest, FINDS + EGGS);
-        checkContainerDataCount(data, EGGS);
+        checkContainerDataCount(data, EGGS + 1);
         this.nest = nest;
         this.data = data;
         nest.startOpen(inv.player);
@@ -37,6 +37,9 @@ public class CrabNestMenu extends AbstractContainerMenu {
         for (int c = 0; c < 9; c++) addSlot(new Slot(inv, c, 8 + c * 18, 142));
         addDataSlots(data);
     }
+
+    /** True for a crop crab nest: grassy menu art and a crop crab in the pool. */
+    public boolean isCrop() { return data.get(EGGS) == 1; }
 
     public float progress(int egg) { return Math.min(1f, data.get(egg) / (float) HATCH); }
 
@@ -55,7 +58,7 @@ public class CrabNestMenu extends AbstractContainerMenu {
         if (index < nestEnd) {
             if (!moveItemStackTo(stack, nestEnd, end, true)) return ItemStack.EMPTY;
         } else if (page == 1) {
-            if (!stack.is(ModRegistry.CRAB_EGG.get()) || !moveItemStackTo(stack, FINDS, nestEnd, false)) return ItemStack.EMPTY;
+            if (!com.crabtime.crab.Crab.isEgg(stack) || !moveItemStackTo(stack, FINDS, nestEnd, false)) return ItemStack.EMPTY;
         } else if (!moveItemStackTo(stack, 0, FINDS, false)) return ItemStack.EMPTY;
         if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY); else slot.setChanged();
         return copy;
@@ -78,7 +81,7 @@ public class CrabNestMenu extends AbstractContainerMenu {
 
     class EggSlot extends PageSlot {
         EggSlot(Container c, int i, int x, int y) { super(c, i, x, y, 1); }
-        @Override public boolean mayPlace(ItemStack stack) { return stack.is(ModRegistry.CRAB_EGG.get()); }
+        @Override public boolean mayPlace(ItemStack stack) { return stack.is(isCrop() ? ModRegistry.CROP_CRAB_EGG.get() : ModRegistry.CRAB_EGG.get()); }
         @Override public int getMaxStackSize() { return 1; }
     }
 }

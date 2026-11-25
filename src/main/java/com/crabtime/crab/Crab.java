@@ -2,6 +2,9 @@ package com.crabtime.crab;
 
 import com.crabtime.CrabTime;
 import com.crabtime.ModRegistry;
+import net.minecraft.world.entity.ai.village.poi.PoiType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -109,7 +112,9 @@ public class Crab extends Animal {
     @Override public boolean removeWhenFarAway(double dist) { return false; }
 
     @Override
-    protected void registerGoals() {
+    protected void registerGoals() { crabGoals(); }
+
+    protected void crabGoals() {
         goalSelector.addGoal(0, new Busy());
         goalSelector.addGoal(1, new Pinch());
         goalSelector.addGoal(2, new BreedGoal(this, 1.0));
@@ -140,7 +145,7 @@ public class Crab extends Animal {
         animStart = tickCount;
     }
 
-    public int currentAnim() { return animIdx >= 0 && tickCount - animStart < DUR[animIdx] * 20f ? animIdx : -1; }
+    public int currentAnim() { return animIdx >= 0 && tickCount - animStart < duration(animIdx) * 20f ? animIdx : -1; }
     /** Moves the crab stands still for. */
     public boolean busy() { int a = currentAnim(); return a == DIG || a == WARN || a == SNIP || a == SHED || a == BURY || warnTicks > 0 || buryTicks > 0; }
 
@@ -152,7 +157,7 @@ public class Crab extends Animal {
 
     @Nullable public String animName() {
         if (clientAnim < 0 || clientAnim >= ANIMS.length) return null;
-        return (tickCount - clientStart) / 20f <= DUR[clientAnim] ? ANIMS[clientAnim] : null;
+        return (tickCount - clientStart) / 20f <= duration(clientAnim) ? ANIMS[clientAnim] : null;
     }
 
     public float animTime(float pt) { return (tickCount + pt - clientStart) / 20f; }
@@ -161,7 +166,7 @@ public class Crab extends Animal {
 
     public ItemStack held() { return entityData.get(HELD); }
     public boolean hasHeld() { return !held().isEmpty(); }
-    private void setHeld(ItemStack s) { entityData.set(HELD, s); carryTicks = 0; }
+    protected void setHeld(ItemStack s) { entityData.set(HELD, s); carryTicks = 0; }
     public void setNest(@Nullable BlockPos pos) { nest = pos; }
 
     // ---------- ticking ----------
@@ -198,7 +203,7 @@ public class Crab extends Animal {
                 nest = findNest(24).orElse(null);
                 if (nest == null && nestless >= 600 && !isBaby() && canNestHere()) {
                     BlockPos at = blockPosition();
-                    level().setBlock(at, ModRegistry.CRAB_NEST.get().defaultBlockState(), 3);
+                    level().setBlock(at, nestBlock().defaultBlockState(), 3);
                     nest = at;
                     moveTo(getX(), at.getY() + 0.2, getZ());
                     playSound(SoundEvents.SAND_PLACE, 1f, 1f);
@@ -211,18 +216,30 @@ public class Crab extends Animal {
     /** Nests only go on sand, above the water. */
     private boolean canNestHere() {
         BlockPos at = blockPosition();
-        return onGround() && !isInWater() && getTarget() == null && level().getBlockState(at.below()).is(BlockTags.SAND)
+        return onGround() && !isInWater() && getTarget() == null && canNestOn(level().getBlockState(at.below()))
                 && level().isEmptyBlock(at) && level().getFluidState(at).isEmpty();
     }
 
-    private boolean validNest() { return nest != null && level().getBlockState(nest).is(ModRegistry.CRAB_NEST.get()); }
+    protected boolean validNest() { return nest != null && level().getBlockState(nest).is(nestBlock()); }
 
-    private Optional<BlockPos> findNest(int radius) {
+    // ---------- what kind of crab this is (the crop crab changes these) ----------
+    protected Block nestBlock() { return ModRegistry.CRAB_NEST.get(); }
+    protected ResourceKey<PoiType> nestPoi() { return ModRegistry.NEST_POI.getKey(); }
+    protected boolean canNestOn(BlockState below) { return below.is(BlockTags.SAND); }
+    protected boolean canDigOn(BlockState below) { return below.is(BlockTags.SAND) || below.is(Blocks.GRAVEL) || below.is(Blocks.CLAY); }
+    protected ResourceKey<LootTable> digLoot() { return DIG_LOOT; }
+    public Item eggItem() { return ModRegistry.CRAB_EGG.get(); }
+    /** Running away (the crop crab); the beach crab stands its ground. */
+    public boolean isFleeing() { return false; }
+    @Nullable public BlockPos nest() { return nest; }
+    public static boolean isEgg(ItemStack s) { return s.is(ModRegistry.CRAB_EGG.get()) || s.is(ModRegistry.CROP_CRAB_EGG.get()); }
+
+    protected Optional<BlockPos> findNest(int radius) {
         if (!(level() instanceof ServerLevel sl)) return Optional.empty();
-        return sl.getPoiManager().findClosest(h -> h.is(ModRegistry.NEST_POI.getKey()), blockPosition(), radius, PoiManager.Occupancy.ANY);
+        return sl.getPoiManager().findClosest(h -> h.is(nestPoi()), blockPosition(), radius, PoiManager.Occupancy.ANY);
     }
 
-    private void dust(int n) {
+    protected void dust(int n) {
         if (level() instanceof ServerLevel sl) {
             BlockState below = level().getBlockState(blockPosition().below());
             if (below.isAir()) below = Blocks.SAND.defaultBlockState();
@@ -233,7 +250,7 @@ public class Crab extends Animal {
     /** What a dig turns up: the loot table data/crabtime/loot_table/gameplay/crab_dig.json. */
     private ItemStack digUp() {
         if (!(level() instanceof ServerLevel sl)) return ItemStack.EMPTY;
-        LootTable table = sl.getServer().reloadableRegistries().getLootTable(DIG_LOOT);
+        LootTable table = sl.getServer().reloadableRegistries().getLootTable(digLoot());
         LootParams params = new LootParams.Builder(sl).withParameter(LootContextParams.ORIGIN, position())
                 .withParameter(LootContextParams.THIS_ENTITY, this).create(LootContextParamSets.GIFT);
         for (ItemStack s : table.getRandomItems(params)) if (!s.isEmpty()) return s;
@@ -248,7 +265,7 @@ public class Crab extends Animal {
     @Override
     public void spawnChildFromBreeding(ServerLevel level, Animal partner) {
         int n = 1 + getRandom().nextInt(2);
-        for (int i = 0; i < n; i++) spawnAtLocation(new ItemStack(ModRegistry.CRAB_EGG.get()));
+        for (int i = 0; i < n; i++) spawnAtLocation(new ItemStack(eggItem()));
         setAge(6000); partner.setAge(6000);
         resetLove(); partner.resetLove();
         level.broadcastEntityEvent(this, (byte) 18);
@@ -263,7 +280,7 @@ public class Crab extends Animal {
         boolean calm = getTarget() == null;
         boolean hit = super.hurt(src, amount);
         if (!hit || level().isClientSide || !isAlive()) return hit;
-        if (calm && src.getEntity() instanceof LivingEntity && buryTicks == 0) {
+        if (calm && warns() && src.getEntity() instanceof LivingEntity && buryTicks == 0) {
             warnTicks = 30; playAnim(WARN);
         }
         return hit;
@@ -325,7 +342,7 @@ public class Crab extends Animal {
         @Override public boolean canUse() {
             if (isBaby() || hasHeld() || digCooldown > 0 || getTarget() != null || !onGround() || getRandom().nextInt(40) != 0) return false;
             BlockState below = level().getBlockState(blockPosition().below());
-            return below.is(BlockTags.SAND) || below.is(Blocks.GRAVEL) || below.is(Blocks.CLAY);
+            return canDigOn(below);
         }
         @Override public boolean canContinueToUse() { return t < 52 && getTarget() == null; }
         @Override public void start() { t = 0; getNavigation().stop(); playAnim(DIG); }
@@ -343,6 +360,12 @@ public class Crab extends Animal {
         @Override public void stop() { if (t < 50) digCooldown = 200; }
     }
 
+    /** How long a one-shot move lasts, in seconds (matches the animation). */
+    protected float duration(int anim) { return DUR[anim]; }
+
+    /** Beach crabs warn before they fight back. */
+    protected boolean warns() { return true; }
+
     /** Picks up crab eggs lying near the nest so it can carry them in. */
     class FetchEgg extends Goal {
         ItemEntity egg;
@@ -353,7 +376,7 @@ public class Crab extends Animal {
             look = 20;
             egg = null;
             double best = 1e9;
-            for (ItemEntity it : level().getEntitiesOfClass(ItemEntity.class, getBoundingBox().inflate(12, 4, 12), it -> it.getItem().is(ModRegistry.CRAB_EGG.get()))) {
+            for (ItemEntity it : level().getEntitiesOfClass(ItemEntity.class, getBoundingBox().inflate(12, 4, 12), it -> it.getItem().is(eggItem()))) {
                 double d = distanceToSqr(it);
                 if (d < best) { best = d; egg = it; }
             }
@@ -393,7 +416,7 @@ public class Crab extends Animal {
             if (nest == null) return;
             if (distanceToSqr(nest.getX() + 0.5, nest.getY() + 0.5, nest.getZ() + 0.5) < 3.5) {
                 ItemStack left = level().getBlockEntity(nest) instanceof CrabNestBlockEntity be
-                        ? (held().is(ModRegistry.CRAB_EGG.get()) ? be.insertEgg(held().copy()) : be.insert(held().copy())) : held().copy();
+                        ? (isEgg(held()) ? be.insertEgg(held().copy()) : be.insert(held().copy())) : held().copy();
                 if (!left.isEmpty()) spawnAtLocation(left);
                 setHeld(ItemStack.EMPTY);
                 playSound(SoundEvents.SAND_PLACE, 0.6f, 1.3f);
@@ -411,7 +434,7 @@ public class Crab extends Animal {
         @Override public boolean canUse() {
             return !isBaby() && shedCooldown == 0 && !hasHeld() && getTarget() == null && validNest() && nest.distSqr(blockPosition()) < 64 && getRandom().nextInt(100) == 0;
         }
-        @Override public boolean canContinueToUse() { return t < 26; }
+        @Override public boolean canContinueToUse() { return t < duration(SHED) * 20 + 2; }
         @Override public void start() { t = 0; getNavigation().stop(); playAnim(SHED); }
         @Override public void tick() {
             t++;

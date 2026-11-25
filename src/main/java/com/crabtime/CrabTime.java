@@ -1,6 +1,8 @@
 package com.crabtime;
 
 import com.crabtime.crab.Crab;
+import com.crabtime.crab.CropCrab;
+import com.crabtime.item.UltraCropMealItem;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -20,12 +22,18 @@ public class CrabTime {
         ModRegistry.register(bus);
         bus.addListener(this::attributes);
         bus.addListener(this::spawnPlacements);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(UltraCropMealItem::levelTick);
     }
 
-    private void attributes(EntityAttributeCreationEvent e) { e.put(ModRegistry.CRAB.get(), Crab.createAttributes().build()); }
+    private void attributes(EntityAttributeCreationEvent e) {
+        e.put(ModRegistry.CRAB.get(), Crab.createAttributes().build());
+        e.put(ModRegistry.CROP_CRAB.get(), CropCrab.createAttributes().build());
+    }
 
     private void spawnPlacements(RegisterSpawnPlacementsEvent e) {
         e.register(ModRegistry.CRAB.get(), SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Crab::checkCrabSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        e.register(ModRegistry.CROP_CRAB.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                CropCrab::checkCropCrabSpawn, RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 }

@@ -16,6 +16,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
@@ -27,14 +28,18 @@ public class CrabNestBlockEntity extends BaseContainerBlockEntity {
     private NonNullList<ItemStack> items = NonNullList.withSize(SIZE, ItemStack.EMPTY);
     private final int[] progress = new int[EGGS];
     private final ContainerData data = new ContainerData() {
-        @Override public int get(int i) { return progress[i]; }
-        @Override public void set(int i, int v) { progress[i] = v; }
-        @Override public int getCount() { return EGGS; }
+        @Override public int get(int i) { return i < EGGS ? progress[i] : (isCrop() ? 1 : 0); }
+        @Override public void set(int i, int v) { if (i < EGGS) progress[i] = v; }
+        @Override public int getCount() { return EGGS + 1; }
     };
 
     public CrabNestBlockEntity(BlockPos pos, BlockState state) { super(ModRegistry.NEST_BE.get(), pos, state); }
 
-    @Override protected Component getDefaultName() { return Component.translatable("container.crabtime.crab_nest"); }
+    /** A crop crab nest (grassy) rather than a beach one. */
+    public boolean isCrop() { return getBlockState().is(ModRegistry.CROP_NEST.get()); }
+    private Item eggItem() { return isCrop() ? ModRegistry.CROP_CRAB_EGG.get() : ModRegistry.CRAB_EGG.get(); }
+
+    @Override protected Component getDefaultName() { return Component.translatable(isCrop() ? "container.crabtime.crop_crab_nest" : "container.crabtime.crab_nest"); }
     @Override protected NonNullList<ItemStack> getItems() { return items; }
     @Override protected void setItems(NonNullList<ItemStack> list) { items = list; }
     @Override protected AbstractContainerMenu createMenu(int id, Inventory inv) { return new CrabNestMenu(id, inv, this, data); }
@@ -43,7 +48,7 @@ public class CrabNestBlockEntity extends BaseContainerBlockEntity {
     /** Egg slots only take crab eggs (so hoppers can't fill them with anything else). */
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
-        return slot < FINDS || (stack.is(ModRegistry.CRAB_EGG.get()) && items.get(slot).isEmpty());
+        return slot < FINDS || (stack.is(eggItem()) && items.get(slot).isEmpty());
     }
 
     /** Puts a find in the 18 find slots; returns what didn't fit. */
@@ -75,18 +80,19 @@ public class CrabNestBlockEntity extends BaseContainerBlockEntity {
     public static void serverTick(Level level, BlockPos pos, BlockState state, CrabNestBlockEntity be) {
         for (int e = 0; e < EGGS; e++) {
             ItemStack egg = be.items.get(FINDS + e);
-            if (egg.isEmpty() || !egg.is(ModRegistry.CRAB_EGG.get())) { be.progress[e] = 0; continue; }
+            if (egg.isEmpty() || !Crab.isEgg(egg)) { be.progress[e] = 0; continue; }
             if (++be.progress[e] >= HATCH) {
                 be.progress[e] = 0;
+                boolean crop = egg.is(ModRegistry.CROP_CRAB_EGG.get());
                 egg.shrink(1);
                 be.setChanged();
-                if (level instanceof ServerLevel sl) hatch(sl, pos);
+                if (level instanceof ServerLevel sl) hatch(sl, pos, crop);
             }
         }
     }
 
-    private static void hatch(ServerLevel level, BlockPos pos) {
-        Crab baby = ModRegistry.CRAB.get().create(level);
+    private static void hatch(ServerLevel level, BlockPos pos, boolean crop) {
+        Crab baby = crop ? ModRegistry.CROP_CRAB.get().create(level) : ModRegistry.CRAB.get().create(level);
         if (baby == null) return;
         baby.setAge(-24000);
         baby.moveTo(pos.getX() + 0.5 + (level.random.nextDouble() - 0.5), pos.getY() + 0.25, pos.getZ() + 0.5 + (level.random.nextDouble() - 0.5),

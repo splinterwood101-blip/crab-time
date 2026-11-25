@@ -17,6 +17,9 @@ public class CrabNestScreen extends AbstractContainerScreen<CrabNestMenu> {
     private static final ResourceLocation FINDS_BG = CrabTime.id("textures/gui/crab_nest_finds.png");
     private static final ResourceLocation EGGS_BG = CrabTime.id("textures/gui/crab_nest_eggs.png");
     private static final ResourceLocation TABS = CrabTime.id("textures/gui/crab_nest_tabs.png");
+    private static final ResourceLocation CROP_FINDS_BG = CrabTime.id("textures/gui/crop_crab_nest_finds.png");
+    private static final ResourceLocation CROP_EGGS_BG = CrabTime.id("textures/gui/crop_crab_nest_eggs.png");
+    private static final ResourceLocation CROP_TABS = CrabTime.id("textures/gui/crop_crab_nest_tabs.png");
     private static final Component EGGS_TITLE = Component.translatable("container.crabtime.crab_nest_eggs");
     private static final Component[] TAB_NAMES = {Component.translatable("crabtime.nest.tab.finds"), Component.translatable("crabtime.nest.tab.eggs")};
     /** The rock pool on the menu picture: x, y, width, height. */
@@ -49,14 +52,17 @@ public class CrabNestScreen extends AbstractContainerScreen<CrabNestMenu> {
     @Override
     protected void renderBg(GuiGraphics g, float pt, int mx, int my) {
         int page = menu.page;
-        ItemStack[] icons = {new ItemStack(ModRegistry.GLIMMER_SAND.get()), new ItemStack(ModRegistry.CRAB_EGG.get())};
+        boolean crop = menu.isCrop();
+        ResourceLocation tabs = crop ? CROP_TABS : TABS;
+        ItemStack[] icons = crop ? new ItemStack[]{new ItemStack(net.minecraft.world.item.Items.CARROT), new ItemStack(ModRegistry.CROP_CRAB_EGG.get())}
+                : new ItemStack[]{new ItemStack(ModRegistry.GLIMMER_SAND.get()), new ItemStack(ModRegistry.CRAB_EGG.get())};
         // the tab that isn't open sits behind the menu
         for (int i = 0; i < 2; i++) if (i != page) {
-            g.blit(TABS, tabX(i), topPos - 26, 0, 0, 28, 28, 64, 32);
+            g.blit(tabs, tabX(i), topPos - 26, 0, 0, 28, 28, 64, 32);
             g.renderItem(icons[i], tabX(i) + 6, topPos - 20);
         }
-        g.blit(page == 0 ? FINDS_BG : EGGS_BG, leftPos, topPos, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
-        g.blit(TABS, tabX(page), topPos - 28, 28, 0, 28, 32, 64, 32);
+        g.blit(crop ? (page == 0 ? CROP_FINDS_BG : CROP_EGGS_BG) : (page == 0 ? FINDS_BG : EGGS_BG), leftPos, topPos, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
+        g.blit(tabs, tabX(page), topPos - 28, 28, 0, 28, 32, 64, 32);
         g.renderItem(icons[page], tabX(page) + 6, topPos - 21);
         if (page == 1)
             for (int e = 0; e < CrabNestMenu.EGGS; e++) {
@@ -66,7 +72,9 @@ public class CrabNestScreen extends AbstractContainerScreen<CrabNestMenu> {
                     g.fill(x, y, x + w, y + 3, 0xFF7FD35A);
                 }
             }
-        if (crab == null && minecraft != null && minecraft.level != null) crab = ModRegistry.CRAB.get().create(minecraft.level);
+        if (crab != null && (crab instanceof com.crabtime.crab.CropCrab) != crop) crab = null; // the nest kind arrives a moment after opening
+        if (crab == null && minecraft != null && minecraft.level != null)
+            crab = crop ? ModRegistry.CROP_CRAB.get().create(minecraft.level) : ModRegistry.CRAB.get().create(minecraft.level);
         if (crab != null)
             InventoryScreen.renderEntityInInventoryFollowsMouse(g, leftPos + POOL_X + 1, topPos + POOL_Y + 1, leftPos + POOL_X + POOL_W - 1,
                     topPos + POOL_Y + POOL_H - 1, 42, 0.0625f, mx, my, crab);

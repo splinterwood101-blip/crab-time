@@ -17,14 +17,12 @@ import net.minecraft.world.item.ItemStack;
 
 /** The crab. It turns sideways when it walks (crabs scuttle), and shows what it's carrying above its claws. */
 public class CrabRenderer extends MobRenderer<Crab, CrabModel> {
-    public static final ResourceLocation TEX = CrabTime.id("textures/entity/crab.png");
-
-    public CrabRenderer(EntityRendererProvider.Context ctx) {
-        super(ctx, new CrabModel(), 0.35f);
+    public CrabRenderer(EntityRendererProvider.Context ctx, CrabModel.Kind kind) {
+        super(ctx, new CrabModel(kind), 0.35f);
         addLayer(new Held(this));
     }
 
-    @Override public ResourceLocation getTextureLocation(Crab e) { return TEX; }
+    @Override public ResourceLocation getTextureLocation(Crab e) { return model.kind.texture(); }
 
     @Override
     protected void setupRotations(Crab e, PoseStack ps, float bob, float yaw, float pt, float scale) {
@@ -41,7 +39,8 @@ public class CrabRenderer extends MobRenderer<Crab, CrabModel> {
             float k = e.carryAmount(pt);
             if (s.isEmpty() || k < 0.3f) return;
             ps.pushPose();
-            ps.translate(-CrabModel.HELD_AT.x / 16f, (24f - CrabModel.HELD_AT.y) / 16f, CrabModel.HELD_AT.z / 16f);
+            org.joml.Vector3f at = getParentModel().kind.heldAt();
+            ps.translate(-at.x / 16f, (24f - at.y) / 16f, at.z / 16f);
             ps.mulPose(Axis.XP.rotationDegrees(180));
             ps.scale(0.3f * k, 0.3f * k, 0.3f * k);
             Minecraft.getInstance().getItemRenderer().renderStatic(s, ItemDisplayContext.FIXED, light, OverlayTexture.NO_OVERLAY, ps, buf, e.level(), e.getId());

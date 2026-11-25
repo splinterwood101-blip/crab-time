@@ -20,5 +20,16 @@
   "container.crabtime.crab_nest_eggs": "Nest - Eggs",
   "crabtime.nest.tab.finds": "Finds",
   "crabtime.nest.tab.eggs": "Eggs",
-  "tooltip.crabtime.crab_egg": "Hatches in a crab nest (Eggs tab)"
+  "tooltip.crabtime.crab_egg": "Hatches in a crab nest (Eggs tab)",
+  "entity.crabtime.crop_crab": "Crop Crab",
+  "item.crabtime.crop_crab_spawn_egg": "Crop Crab Spawn Egg",
+  "item.crabtime.crop_crab_egg": "Crop Crab Egg",
+  "tooltip.crabtime.crop_crab_egg": "Hatches in a crop crab nest (Eggs tab)",
+  "block.crabtime.crop_crab_nest": "Crop Crab Nest",
+  "container.crabtime.crop_crab_nest": "Crop Crab Nest",
+  "block.crabtime.hefty_carrot": "Hefty Carrot",
+  "block.crabtime.hefty_potato": "Hefty Potato",
+  "block.crabtime.hefty_beetroot": "Hefty Beetroot",
+  "item.crabtime.ultra_crop_meal": "Ultra Crop Meal",
+  "tooltip.crabtime.ultra_crop_meal": "Use on crops: everything in a 5x5 grows 4x faster for a day"
 }

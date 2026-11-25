@@ -1,0 +1,8 @@
+{
+  "feature": "crabtime:crop_crab_nest",
+  "placement": [
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

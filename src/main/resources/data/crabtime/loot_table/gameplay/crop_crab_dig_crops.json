@@ -1,0 +1,50 @@
+{
+  "type": "minecraft:gift",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:potato",
+          "weight": 25
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:carrot",
+          "weight": 25
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:wheat_seeds",
+          "weight": 15
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:beetroot_seeds",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "name": "crabtime:hefty_carrot",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "crabtime:hefty_potato",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "crabtime:hefty_beetroot",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "crabtime:ultra_crop_meal",
+          "weight": 2
+        }
+      ]
+    }
+  ]
+}

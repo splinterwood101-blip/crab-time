@@ -1,0 +1,103 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "0": "crabtime:block/crop_crab_nest",
+  "particle": "crabtime:block/crop_crab_nest"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    3,
+    16
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      8.0,
+      0.0,
+      16.0,
+      1.5
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      8.0,
+      1.5,
+      16.0,
+      3.0
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      8.0,
+      3.0,
+      16.0,
+      4.5
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      8.0,
+      4.5,
+      16.0,
+      6.0
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      0.0,
+      0.0,
+      8.0,
+      8.0
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      0.0,
+      8.0,
+      8.0,
+      16.0
+     ],
+     "texture": "#0"
+    }
+   }
+  }
+ ],
+ "display": {
+  "thirdperson_righthand": {
+   "translation": [
+    0,
+    1.5,
+    0
+   ],
+   "scale": [
+    0.25,
+    0.25,
+    0.25
+   ]
+  },
+  "firstperson_righthand": {
+   "translation": [
+    0.5,
+    3.75,
+    0
+   ],
+   "scale": [
+    0.5,
+    0.5,
+    0.5
+   ]
+  }
+ }
+}

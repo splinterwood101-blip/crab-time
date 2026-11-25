@@ -6,6 +6,8 @@ import net.minecraft.world.inventory.MenuType;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import com.crabtime.block.CrabNestBlockEntity;
 import com.crabtime.crab.Crab;
+import com.crabtime.crab.CropCrab;
+import com.crabtime.item.UltraCropMealItem;
 import com.crabtime.item.BigCrabClawItem;
 import com.crabtime.item.DriftwoodItem;
 import com.crabtime.recipe.DriftwoodRecipe;
@@ -65,10 +67,21 @@ public final class ModRegistry {
             .mapColor(MapColor.COLOR_LIGHT_GRAY).instrument(NoteBlockInstrument.BASS).strength(2f).sound(SoundType.WOOD).ignitedByLava()));
     public static final DeferredBlock<CrabNestBlock> CRAB_NEST = BLOCKS.register("crab_nest", () -> new CrabNestBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.SAND).strength(0.5f).sound(SoundType.SAND).noOcclusion()));
+    public static final DeferredBlock<CrabNestBlock> CROP_NEST = BLOCKS.register("crop_crab_nest", () -> new CrabNestBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.GRASS).strength(0.5f).sound(SoundType.GRASS).noOcclusion()));
+    public static final DeferredBlock<Block> HEFTY_CARROT = BLOCKS.register("hefty_carrot", () -> hefty(MapColor.COLOR_ORANGE));
+    public static final DeferredBlock<Block> HEFTY_POTATO = BLOCKS.register("hefty_potato", () -> hefty(MapColor.SAND));
+    public static final DeferredBlock<Block> HEFTY_BEETROOT = BLOCKS.register("hefty_beetroot", () -> hefty(MapColor.COLOR_RED));
+
+    private static Block hefty(MapColor color) {
+        return new Block(BlockBehaviour.Properties.of().mapColor(color).strength(1f).sound(SoundType.WOOD).noOcclusion());
+    }
 
     // entity
     public static final DeferredHolder<EntityType<?>, EntityType<Crab>> CRAB = ENTITIES.register("crab",
             () -> EntityType.Builder.of(Crab::new, MobCategory.CREATURE).sized(0.75f, 0.5f).clientTrackingRange(8).build("crab"));
+    public static final DeferredHolder<EntityType<?>, EntityType<CropCrab>> CROP_CRAB = ENTITIES.register("crop_crab",
+            () -> EntityType.Builder.of(CropCrab::new, MobCategory.CREATURE).sized(0.75f, 0.5f).clientTrackingRange(8).build("crop_crab"));
 
     // items
     public static final DeferredItem<BlockItem> GLIMMER_SAND_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("glimmer_sand_block", GLIMMER_SAND_BLOCK);
@@ -82,24 +95,40 @@ public final class ModRegistry {
             tip.add(Component.translatable("tooltip.crabtime.crab_egg").withStyle(net.minecraft.ChatFormatting.GRAY));
         }
     });
+    public static final DeferredItem<Item> CROP_CRAB_EGG = ITEMS.register("crop_crab_egg", () -> new Item(new Item.Properties().stacksTo(16)) {
+        @Override public void appendHoverText(ItemStack s, TooltipContext c, java.util.List<Component> tip, net.minecraft.world.item.TooltipFlag f) {
+            tip.add(Component.translatable("tooltip.crabtime.crop_crab_egg").withStyle(net.minecraft.ChatFormatting.GRAY));
+        }
+    });
+    public static final DeferredItem<BlockItem> CROP_NEST_ITEM = ITEMS.registerSimpleBlockItem("crop_crab_nest", CROP_NEST);
+    public static final DeferredItem<BlockItem> HEFTY_CARROT_ITEM = ITEMS.registerSimpleBlockItem("hefty_carrot", HEFTY_CARROT);
+    public static final DeferredItem<BlockItem> HEFTY_POTATO_ITEM = ITEMS.registerSimpleBlockItem("hefty_potato", HEFTY_POTATO);
+    public static final DeferredItem<BlockItem> HEFTY_BEETROOT_ITEM = ITEMS.registerSimpleBlockItem("hefty_beetroot", HEFTY_BEETROOT);
+    public static final DeferredItem<UltraCropMealItem> ULTRA_CROP_MEAL = ITEMS.register("ultra_crop_meal", () -> new UltraCropMealItem(new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> CROP_CRAB_SPAWN_EGG = ITEMS.register("crop_crab_spawn_egg", () -> new DeferredSpawnEggItem(CROP_CRAB, 0x6E9A3A, 0xE7A23A, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> CRAB_SPAWN_EGG = ITEMS.register("crab_spawn_egg", () -> new DeferredSpawnEggItem(CRAB, 0xC43C26, 0xEC8440, new Item.Properties()));
 
     // other
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrabNestBlockEntity>> NEST_BE = BLOCK_ENTITIES.register("crab_nest",
-            () -> BlockEntityType.Builder.of(CrabNestBlockEntity::new, CRAB_NEST.get()).build(null));
+            () -> BlockEntityType.Builder.of(CrabNestBlockEntity::new, CRAB_NEST.get(), CROP_NEST.get()).build(null));
     public static final DeferredHolder<RecipeSerializer<?>, SimpleCraftingRecipeSerializer<DriftwoodRecipe>> DRIFTWOOD_RECIPE = RECIPES.register("driftwood_brushing",
             () -> new SimpleCraftingRecipeSerializer<>(DriftwoodRecipe::new));
-    public static final DeferredHolder<Feature<?>, NestFeature> NEST_FEATURE = FEATURES.register("crab_nest", () -> new NestFeature(NoneFeatureConfiguration.CODEC));
+    public static final DeferredHolder<Feature<?>, NestFeature> NEST_FEATURE = FEATURES.register("crab_nest", () -> new NestFeature(NoneFeatureConfiguration.CODEC, false));
+    public static final DeferredHolder<Feature<?>, NestFeature> CROP_NEST_FEATURE = FEATURES.register("crop_crab_nest", () -> new NestFeature(NoneFeatureConfiguration.CODEC, true));
     public static final DeferredHolder<PoiType, PoiType> GLIMMER_POI = POIS.register("glimmer_sand",
             () -> new PoiType(ImmutableSet.copyOf(GLIMMER_SAND_BLOCK.get().getStateDefinition().getPossibleStates()), 0, 1));
     public static final DeferredHolder<PoiType, PoiType> NEST_POI = POIS.register("crab_nest",
             () -> new PoiType(ImmutableSet.copyOf(CRAB_NEST.get().getStateDefinition().getPossibleStates()), 0, 1));
+    public static final DeferredHolder<PoiType, PoiType> CROP_NEST_POI = POIS.register("crop_crab_nest",
+            () -> new PoiType(ImmutableSet.copyOf(CROP_NEST.get().getStateDefinition().getPossibleStates()), 0, 1));
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("crabtime", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.crabtime")).icon(() -> new ItemStack(CRAB_CLAW.get()))
             .displayItems((p, out) -> {
                 out.accept(CRAB_SPAWN_EGG.get()); out.accept(CRAB_CLAW.get()); out.accept(CRAB_EGG.get()); out.accept(BIG_CRAB_CLAW.get());
                 out.accept(GLIMMER_SAND.get()); out.accept(GLIMMER_SAND_BLOCK_ITEM.get()); out.accept(DRIFTWOOD_LOG_ITEM.get()); out.accept(CRAB_NEST_ITEM.get());
+                out.accept(CROP_CRAB_SPAWN_EGG.get()); out.accept(CROP_CRAB_EGG.get()); out.accept(CROP_NEST_ITEM.get()); out.accept(ULTRA_CROP_MEAL.get());
+                out.accept(HEFTY_CARROT_ITEM.get()); out.accept(HEFTY_POTATO_ITEM.get()); out.accept(HEFTY_BEETROOT_ITEM.get());
             }).build());
 
     public static void register(IEventBus bus) {
