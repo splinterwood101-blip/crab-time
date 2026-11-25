@@ -63,7 +63,19 @@ public class CropCrab extends Crab {
     /** Players this crab is scared of, and until when (game time). */
     private final Map<UUID, Long> scaredOf = new HashMap<>();
 
-    public CropCrab(EntityType<? extends Crab> type, Level level) { super(type, level); }
+    public CropCrab(EntityType<? extends Crab> type, Level level) {
+        super(type, level);
+        // a land crab: keeps out of water, and swims to the top if it falls in (it can't breathe down there)
+        setPathfindingMalus(net.minecraft.world.level.pathfinder.PathType.WATER, -1f);
+        setPathfindingMalus(net.minecraft.world.level.pathfinder.PathType.WATER_BORDER, 4f);
+    }
+
+    @Override
+    protected net.minecraft.world.entity.ai.navigation.PathNavigation createNavigation(Level level) {
+        net.minecraft.world.entity.ai.navigation.GroundPathNavigation nav = new net.minecraft.world.entity.ai.navigation.GroundPathNavigation(this, level);
+        nav.setCanFloat(true);
+        return nav;
+    }
 
     /** Plains: grass, dirt or farmland underfoot. Twice as likely near a village. */
     public static boolean checkCropCrabSpawn(EntityType<CropCrab> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource r) {
@@ -85,6 +97,7 @@ public class CropCrab extends Crab {
 
     @Override
     protected void crabGoals() {
+        goalSelector.addGoal(0, new net.minecraft.world.entity.ai.goal.FloatGoal(this));
         goalSelector.addGoal(0, new Busy());
         goalSelector.addGoal(1, new PanicGoal(this, 1.5));
         goalSelector.addGoal(1, new AvoidEntityGoal<>(this, LivingEntity.class, 10f, 1.2, 1.5, e -> e instanceof Enemy));
