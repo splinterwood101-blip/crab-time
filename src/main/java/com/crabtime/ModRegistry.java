@@ -9,6 +9,7 @@ import com.crabtime.crab.Crab;
 import com.crabtime.crab.CropCrab;
 import com.crabtime.item.UltraCropMealItem;
 import com.crabtime.item.BigCrabClawItem;
+import com.crabtime.item.FarmingClawItem;
 import com.crabtime.item.DriftwoodItem;
 import com.crabtime.recipe.DriftwoodRecipe;
 import com.crabtime.world.NestFeature;
@@ -90,6 +91,7 @@ public final class ModRegistry {
     public static final DeferredItem<Item> GLIMMER_SAND = ITEMS.registerSimpleItem("glimmer_sand");
     public static final DeferredItem<Item> CRAB_CLAW = ITEMS.registerSimpleItem("crab_claw");
     public static final DeferredItem<BigCrabClawItem> BIG_CRAB_CLAW = ITEMS.register("big_crab_claw", () -> new BigCrabClawItem(new Item.Properties().durability(250)));
+    public static final DeferredItem<FarmingClawItem> FARMING_CLAW = ITEMS.register("farming_claw", () -> new FarmingClawItem(new Item.Properties().durability(250)));
     public static final DeferredItem<Item> CRAB_EGG = ITEMS.register("crab_egg", () -> new Item(new Item.Properties().stacksTo(16)) {
         @Override public void appendHoverText(ItemStack s, TooltipContext c, java.util.List<Component> tip, net.minecraft.world.item.TooltipFlag f) {
             tip.add(Component.translatable("tooltip.crabtime.crab_egg").withStyle(net.minecraft.ChatFormatting.GRAY));
@@ -125,7 +127,7 @@ public final class ModRegistry {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("crabtime", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.crabtime")).icon(() -> new ItemStack(CRAB_CLAW.get()))
             .displayItems((p, out) -> {
-                out.accept(CRAB_SPAWN_EGG.get()); out.accept(CRAB_CLAW.get()); out.accept(CRAB_EGG.get()); out.accept(BIG_CRAB_CLAW.get());
+                out.accept(CRAB_SPAWN_EGG.get()); out.accept(CRAB_CLAW.get()); out.accept(CRAB_EGG.get()); out.accept(BIG_CRAB_CLAW.get()); out.accept(FARMING_CLAW.get());
                 out.accept(GLIMMER_SAND.get()); out.accept(GLIMMER_SAND_BLOCK_ITEM.get()); out.accept(DRIFTWOOD_LOG_ITEM.get()); out.accept(CRAB_NEST_ITEM.get());
                 out.accept(CROP_CRAB_SPAWN_EGG.get()); out.accept(CROP_CRAB_EGG.get()); out.accept(CROP_NEST_ITEM.get()); out.accept(ULTRA_CROP_MEAL.get());
                 out.accept(HEFTY_CARROT_ITEM.get()); out.accept(HEFTY_POTATO_ITEM.get()); out.accept(HEFTY_BEETROOT_ITEM.get());

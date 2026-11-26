@@ -31,7 +31,7 @@ public final class ClientSetup {
         e.registerItem(new IClientItemExtensions() {
             private ClawRenderer renderer;
             @Override public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                if (renderer == null) renderer = new ClawRenderer();
+                if (renderer == null) renderer = new ClawRenderer("big_crab_claw");
                 return renderer;
             }
 
@@ -44,6 +44,22 @@ public final class ClientSetup {
                 return true;
             }
         }, ModRegistry.BIG_CRAB_CLAW.get());
+        e.registerItem(new IClientItemExtensions() {
+            private ClawRenderer renderer;
+            @Override public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) renderer = new ClawRenderer("farming_claw");
+                return renderer;
+            }
+
+            /** Hold the claw steady in first person: no vanilla arm swing, so its own attack snap shows. */
+            @Override
+            public boolean applyForgeHandTransform(PoseStack pose, LocalPlayer player, HumanoidArm arm, ItemStack stack,
+                                                   float partialTick, float equipProcess, float swingProcess) {
+                int side = arm == HumanoidArm.RIGHT ? 1 : -1;
+                pose.translate(side * 0.56f, -0.52f + equipProcess * -0.6f, -0.72f);
+                return true;
+            }
+        }, ModRegistry.FARMING_CLAW.get());
     }
 
     private ClientSetup() {}

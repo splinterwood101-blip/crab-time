@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "CHC",
+    "HEH",
+    "CHC"
+  ],
+  "key": {
+    "C": {
+      "item": "crabtime:crab_claw"
+    },
+    "H": {
+      "item": "minecraft:iron_hoe"
+    },
+    "E": {
+      "item": "minecraft:emerald"
+    }
+  },
+  "result": {
+    "id": "crabtime:farming_claw",
+    "count": 1
+  }
+}

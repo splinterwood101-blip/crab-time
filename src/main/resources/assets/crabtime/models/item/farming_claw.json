@@ -1,0 +1,66 @@
+{
+ "parent": "minecraft:builtin/entity",
+ "gui_light": "side",
+ "textures": {
+  "particle": "crabtime:item/farming_claw"
+ },
+ "display": {
+  "gui": {
+   "rotation": [
+    30,
+    225,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.7,
+    0.7,
+    0.7
+   ]
+  },
+  "ground": {
+   "translation": [
+    0,
+    3,
+    0
+   ],
+   "scale": [
+    0.3,
+    0.3,
+    0.3
+   ]
+  },
+  "fixed": {
+   "scale": [
+    0.6,
+    0.6,
+    0.6
+   ]
+  },
+  "thirdperson_righthand": {
+   "translation": [
+    -0.75,
+    0,
+    0
+   ]
+  },
+  "firstperson_righthand": {
+   "translation": [
+    0,
+    2.25,
+    0
+   ]
+  },
+  "firstperson_lefthand": {
+   "translation": [
+    0,
+    2.25,
+    0
+   ]
+  }
+ }
+}

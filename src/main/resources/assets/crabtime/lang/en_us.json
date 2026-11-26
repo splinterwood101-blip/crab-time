@@ -31,5 +31,9 @@
   "block.crabtime.hefty_potato": "Hefty Potato",
   "block.crabtime.hefty_beetroot": "Hefty Beetroot",
   "item.crabtime.ultra_crop_meal": "Ultra Crop Meal",
-  "tooltip.crabtime.ultra_crop_meal": "Use on crops: everything in a 5x5 grows 4x faster for a day"
+  "tooltip.crabtime.ultra_crop_meal": "Use on crops: everything in a 5x5 grows 4x faster for a day",
+  "item.crabtime.farming_claw": "Farming Claw",
+  "tooltip.crabtime.farming_claw1": "Right-click dirt or grass: till a 3x3",
+  "tooltip.crabtime.farming_claw2": "Right-click grown crops: harvest and replant a 3x3",
+  "tooltip.crabtime.farming_claw3": "Hold right-click: grow orb speeds up crops in front of you"
 }
