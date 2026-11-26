@@ -43,8 +43,8 @@
   },
   "thirdperson_righthand": {
    "translation": [
-    -0.75,
     0,
+    1,
     0
    ]
   },
@@ -59,6 +59,13 @@
    "translation": [
     0,
     2.25,
+    0
+   ]
+  },
+  "thirdperson_lefthand": {
+   "translation": [
+    0,
+    1,
     0
    ]
   }

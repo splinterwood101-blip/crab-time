@@ -1,0 +1,13 @@
+{
+  "entries": [
+    {
+      "enum": "net/minecraft/client/model/HumanoidModel$ArmPose",
+      "name": "CRABTIME_GROW_ORB",
+      "constructor": "(ZLnet/neoforged/neoforge/client/IArmPoseTransformer;)V",
+      "parameters": {
+        "class": "com/crabtime/client/ClawPoses",
+        "field": "GROW_ORB"
+      }
+    }
+  ]
+}

@@ -51,6 +51,12 @@ public final class ClientSetup {
                 return renderer;
             }
 
+            /** Third person: raise the claw arm while the grow orb is out. */
+            @Override
+            public net.minecraft.client.model.HumanoidModel.ArmPose getArmPose(net.minecraft.world.entity.LivingEntity e, net.minecraft.world.InteractionHand hand, ItemStack stack) {
+                return e.isUsingItem() && e.getUsedItemHand() == hand ? ClawPoses.GROW_ORB.getValue() : null;
+            }
+
             /** Hold the claw steady in first person: no vanilla arm swing, so its own attack snap shows. */
             @Override
             public boolean applyForgeHandTransform(PoseStack pose, LocalPlayer player, HumanoidArm arm, ItemStack stack,
